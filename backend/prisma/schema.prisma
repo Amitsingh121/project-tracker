@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectRole {
+  ADMIN
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String
+  passwordHash  String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  memberships   ProjectMember[]
+  createdTasks  Task[]          @relation("TaskCreator")
+  assignedTasks Task[]          @relation("TaskAssignee")
+
+  @@index([email])
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  members     ProjectMember[]
+  tasks       Task[]
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime    @default(now())
+
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+  @@index([projectId])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  creatorId   String
+  assigneeId  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator     User       @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee    User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  @@index([projectId, status])
+  @@index([assigneeId])
+  @@index([creatorId])
+  @@index([dueDate])
+}
