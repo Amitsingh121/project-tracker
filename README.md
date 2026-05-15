@@ -1,105 +1,146 @@
-# ProjectTracker
+# TaskPilot
 
-A full-stack project & task management app with role-based access control. Built as a 48-hour assessment project.
+A full-stack project & task management app with role-based access control. Built as a take-home assessment project.
+
+## Live Demo
+
+- **Frontend:** [deployed on Railway]
+- **Backend API:** [deployed on Railway] — Swagger docs at `/api/docs`
 
 ## Features
 
-- JWT authentication (signup/login)
+- JWT + Google OAuth authentication
 - Project CRUD with per-project roles (Admin / Member)
-- Task management with Kanban board (drag-and-drop between columns)
-- Member invitation and role management
+- Kanban board with drag-and-drop task management
+- Member invitations and role management
 - Dashboard with stats, assigned tasks, and overdue tracking
 - Dark mode support
 - Responsive design
 
 ## Tech Stack
 
-**Backend:** Node.js, Express, Prisma, PostgreSQL (Neon), Zod, JWT  
-**Frontend:** React, Vite, Tailwind CSS v4, shadcn/ui, TanStack Query, React Hook Form, dnd-kit  
-**Database:** PostgreSQL hosted on Neon
+| Layer | Tech |
+|-------|------|
+| Backend | Node.js, Express 5, TypeScript, Prisma ORM |
+| Database | PostgreSQL (Neon) |
+| Validation | Zod v4 |
+| Auth | JWT, bcryptjs, Google OAuth |
+| Frontend | React 19, TypeScript, Vite |
+| UI | Tailwind CSS v4, shadcn/ui (base-ui), dnd-kit |
+| Data fetching | TanStack Query v5, React Hook Form |
 
-## Getting Started
+## RBAC Model
 
-### Prerequisites
+Roles are **per-project** — a user can be Admin in one project and Member in another.
 
-- Node.js 20+
-- PostgreSQL database (or a Neon account)
-
-### Backend Setup
-
-```bash
-cd backend
-cp .env.example .env
-# Edit .env with your database URL and JWT secret
-npm install
-npx prisma migrate dev
-npm run prisma:seed   # optional - creates demo users
-npm run dev
-```
-
-Demo credentials (after seeding):
-- `admin@demo.com` / `Demo1234!` (Admin role)
-- `member@demo.com` / `Demo1234!` (Member role)
-
-### Frontend Setup
-
-```bash
-cd frontend
-cp .env.example .env   # or create one with VITE_API_URL=http://localhost:3000
-npm install
-npm run dev
-```
-
-Open http://localhost:5173
+| Action | Admin | Member |
+|--------|-------|--------|
+| Create / view project | ✓ | ✓ |
+| Edit / delete project | ✓ | ✗ |
+| Manage members | ✓ | ✗ |
+| Create task | ✓ | ✓ |
+| Edit any task | ✓ | ✗ |
+| Edit own / assigned task | ✓ | ✓ |
+| Delete task | ✓ | Creator only |
 
 ## Project Structure
 
 ```
 project-tracker/
 ├── backend/
-│   ├── prisma/          # Schema + migrations
+│   ├── prisma/              # Schema + migrations
 │   ├── src/
-│   │   ├── config/      # DB, env validation, swagger
-│   │   ├── middleware/   # Auth, RBAC, validation, error handler
-│   │   ├── modules/     # Feature-based (auth, projects, tasks, members, dashboard)
-│   │   └── utils/       # JWT helpers, ApiError class, asyncHandler
+│   │   ├── config/          # DB, env validation (Zod), Swagger
+│   │   ├── middleware/       # requireAuth, RBAC, validate, error handler
+│   │   ├── modules/         # auth · projects · tasks · members · dashboard · invitations
+│   │   └── utils/           # ApiError, asyncHandler, JWT helpers
+│   ├── tests/               # Vitest integration tests
+│   ├── tsconfig.json
 │   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── api/         # Axios endpoint functions
-│   │   ├── components/  # UI primitives (shadcn) + shared layout
-│   │   ├── features/    # Feature hooks + components
-│   │   ├── pages/       # Route-level components
-│   │   └── lib/         # Axios instance, query client, utils
-│   └── package.json
-└── docs/                # API contract, schema docs
+└── frontend/
+    ├── src/
+    │   ├── api/             # Axios endpoint functions
+    │   ├── components/      # shadcn UI primitives + shared layout
+    │   ├── features/        # Feature-level hooks & components
+    │   ├── pages/           # Route-level page components
+    │   └── lib/             # Axios instance, query client, utils
+    ├── tsconfig.json
+    └── package.json
 ```
 
-## RBAC Model
+## Local Setup
 
-Roles are per-project (on `ProjectMember`), not global. A user can be Admin in one project and Member in another.
+### Prerequisites
+- Node.js 20+
+- PostgreSQL database (or a free [Neon](https://neon.tech) account)
 
-| Action | Admin | Member |
-|--------|-------|--------|
-| Create/view project | ✓ | ✓ |
-| Edit/delete project | ✓ | ✗ |
-| Manage members | ✓ | ✗ |
-| Create task | ✓ | ✓ |
-| Edit any task | ✓ | ✗ |
-| Edit own/assigned task | ✓ | ✓ |
-| Delete task | ✓ | Creator only |
+### Backend
 
-## Deployment
+```bash
+cd backend
+cp .env.example .env
+# Fill in DATABASE_URL, JWT_SECRET, GOOGLE_CLIENT_ID
+npm install
+npx prisma migrate dev
+npm run dev          # http://localhost:3000
+```
 
-Both services deploy on Railway:
+Demo seed (optional):
+```bash
+npm run prisma:seed
+# admin@demo.com / Demo1234!
+# member@demo.com / Demo1234!
+```
 
-- **Backend:** Root dir `backend`, start command `npm start`
-- **Frontend:** Root dir `frontend`, build `npm run build`, start `npm start`
+### Frontend
 
-Set `CORS_ORIGIN` on backend to the frontend URL, and `VITE_API_URL` on frontend to the backend URL.
+```bash
+cd frontend
+cp .env.example .env
+# Set VITE_API_URL=http://localhost:3000
+# Set VITE_GOOGLE_CLIENT_ID=...
+npm install
+npm run dev          # http://localhost:5173
+```
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET` | Random string, min 32 chars |
+| `PORT` | Server port (default 3000) |
+| `NODE_ENV` | `development` \| `production` |
+| `CORS_ORIGIN` | Frontend URL (e.g. `https://yourapp.up.railway.app`) |
+| `GOOGLE_CLIENT_ID` | From Google Cloud Console |
+
+### Frontend (`frontend/.env`)
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | Backend URL |
+| `VITE_GOOGLE_CLIENT_ID` | Same Google Client ID |
+
+## Deployment (Railway)
+
+Both services deploy from this monorepo on Railway.
+
+**Backend service**
+- Root directory: `backend`
+- Build command: `npm run build`
+- Start command: `npm start`
+- Set all backend env vars in Railway dashboard
+
+**Frontend service**
+- Root directory: `frontend`
+- Build command: `npm run build`
+- Start command: `npx serve dist`  *(or use Nixpacks static output)*
+
+After deploying:
+1. Set `CORS_ORIGIN` on the backend to your frontend Railway URL
+2. Set `VITE_API_URL` on the frontend to your backend Railway URL
+3. Redeploy both services after env var changes
 
 ## API Documentation
 
-Interactive Swagger docs available at `/api/docs` when the backend is running.
-
-See [docs/API.md](docs/API.md) for the full contract.
+Swagger UI available at `GET /api/docs` when the backend is running.
