@@ -49,7 +49,7 @@ export default function Sidebar({ collapsed, onToggle, dark, onToggleDark }: Pro
   return (
     <aside
       className={`flex flex-col h-screen bg-sidebar border-r border-sidebar-border shrink-0 transition-all duration-200 ${
-        collapsed ? 'w-[60px]' : 'w-[240px]'
+        collapsed ? 'w-[56px]' : 'w-[220px] sm:w-[240px]'
       }`}
     >
       {/* Logo */}

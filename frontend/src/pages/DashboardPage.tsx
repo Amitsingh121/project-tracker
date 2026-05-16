@@ -74,16 +74,16 @@ function StatCard({
       >
         <Icon className="w-4 h-4" style={{ color: iconColor }} />
       </div>
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground pr-10 truncate">{label}</p>
       <p className="text-3xl font-bold text-foreground mt-1">{value}</p>
-      <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
+      <p className="text-xs text-muted-foreground mt-0.5 truncate">{sub}</p>
     </div>
   );
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <Skeleton className="h-7 w-48" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
@@ -122,7 +122,7 @@ export default function DashboardPage() {
   const firstName = user?.name?.split(' ')[0] ?? 'there';
 
   return (
-    <div className="p-6 space-y-6 min-h-full">
+    <div className="p-4 sm:p-6 space-y-6 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -202,13 +202,13 @@ export default function DashboardPage() {
               {upcoming.map((task) => {
                 const overdue = task.dueDate ? isPast(new Date(task.dueDate)) : false;
                 return (
-                  <div key={task.id} className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0">
+                  <div key={task.id} className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0 min-w-0">
                     <span
                       className="w-1.5 h-1.5 rounded-full shrink-0"
                       style={{ background: PRIORITY_DOT[task.priority] ?? '#888' }}
                     />
-                    <span className="flex-1 text-sm text-foreground truncate">{task.title}</span>
-                    <span className="text-xs text-muted-foreground shrink-0">{task.project.name}</span>
+                    <span className="flex-1 min-w-0 text-sm text-foreground truncate">{task.title}</span>
+                    <span className="hidden sm:inline text-xs text-muted-foreground shrink-0 max-w-[40%] truncate">{task.project.name}</span>
                     {task.dueDate && (
                       <span className={`text-xs font-medium shrink-0 ${overdue ? 'text-destructive' : 'text-muted-foreground'}`}>
                         {format(new Date(task.dueDate), 'MMM d')}
@@ -245,11 +245,11 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={p.id}
-                    className="flex items-center gap-3 py-2.5 border-b border-border last:border-0 cursor-pointer hover:opacity-80 transition-opacity"
+                    className="flex items-center gap-3 py-2.5 border-b border-border last:border-0 cursor-pointer hover:opacity-80 transition-opacity min-w-0"
                     onClick={() => navigate(`/projects/${p.id}`)}
                   >
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: col }} />
-                    <span className="flex-1 text-sm font-medium text-foreground truncate">{p.name}</span>
+                    <span className="flex-1 min-w-0 text-sm font-medium text-foreground truncate">{p.name}</span>
                     <span className="text-xs text-muted-foreground shrink-0">{p.taskCount} tasks</span>
                   </div>
                 );
@@ -266,13 +266,13 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-0">
               {(overdueTasks as Task[]).slice(0, 6).map((task) => (
-                <div key={task.id} className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0">
+                <div key={task.id} className="flex items-center gap-2.5 py-2.5 border-b border-border last:border-0 min-w-0">
                   <span
                     className="w-1.5 h-1.5 rounded-full shrink-0"
                     style={{ background: PRIORITY_DOT[task.priority] ?? '#888' }}
                   />
-                  <span className="flex-1 text-sm text-foreground truncate">{task.title}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">{task.project.name}</span>
+                  <span className="flex-1 min-w-0 text-sm text-foreground truncate">{task.title}</span>
+                  <span className="hidden sm:inline text-xs text-muted-foreground shrink-0 max-w-[40%] truncate">{task.project.name}</span>
                   {task.dueDate && (
                     <span className="text-xs font-medium text-destructive shrink-0">
                       {format(new Date(task.dueDate), 'MMM d')}
